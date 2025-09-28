@@ -1,0 +1,862 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Probability and Odds</title>
+    <meta name="description" content="Interactive plot of the odds function f(p) = p / (1 - p) for a lesson on probability." />
+
+    <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.6/dist/chart.umd.min.js" integrity="sha384-Sse/HDqcypGpyTDpvZOJNnG0TT3feGQUkF9H+mnRvic+LjR+K1NhTt8f51KIQ3v3" crossorigin="anonymous"></script>
+
+    <style>
+      :root {
+        color-scheme: light dark;
+        --fg: CanvasText;
+        --bg: Canvas;
+        --muted: #6b7280;
+        --accent: #2563eb;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+        line-height: 1.5;
+        background: var(--bg);
+        color: var(--fg);
+      }
+      header {
+        padding: 1rem 1.25rem 0.5rem;
+      }
+      main {
+        padding: 0 1.25rem 2rem;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      h1 {
+        margin: 0.2rem 0 0.75rem;
+        font-size: clamp(1.4rem, 2.2vw + 1rem, 2rem);
+      }
+      p { margin: 0.5rem 0; }
+      .muted { color: var(--muted); }
+      .panel {
+        display: grid;
+        gap: 0.75rem 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        align-items: end;
+        margin: 1rem 0 0.5rem;
+      }
+      .charts {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        align-items: stretch;
+        margin-top: 0.5rem;
+      }
+      label { font-weight: 600; font-size: 0.95rem; }
+      .ctrl { display: flex; flex-direction: column; gap: 0.4rem; }
+      input[type="range"] { width: 100%; }
+      output { font-variant-numeric: tabular-nums; }
+      .canvas-wrap { position: relative; height: 60vh; min-height: 360px; }
+      footer { padding: 1rem 1.25rem 2rem; font-size: 0.95rem; }
+      code { background: color-mix(in oklab, var(--fg) 10%, transparent); padding: 0.1rem 0.3rem; border-radius: 0.25rem; }
+      a { color: var(--accent); text-decoration: none; }
+      a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <header>
+  <h1>Probability and Odds</h1>
+    </header>
+
+    <main>
+      <section class="panel" aria-label="Controls for the odds chart">
+        <div class="ctrl">
+          <label for="pSlider">Select p</label>
+          <input id="pSlider" type="range" min="0.001" max="0.999" step="0.001" value="0.200" />
+          <div>
+            p = <output id="pOut">0.200</output>
+            &nbsp;•&nbsp;
+            f(p) = <output id="oddsOut">0.250</output>
+          </div>
+        </div>
+      </section>
+
+      <div class="charts">
+        <div class="canvas-wrap">
+          <canvas id="oddsChart" aria-label="Plot of f(p) = p / (1 - p)" role="img"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="inverseChart" aria-label="Plot of p as a function of odds o (p = o / (1 + o))" role="img"></canvas>
+        </div>
+      </div>
+
+      <section id="practice" style="margin-top: 1.25rem;">
+        <h2 style="margin: 0 0 0.5rem; font-size: 1.1rem;">Practice: Probability and Odds</h2>
+        <ol>
+          <li>
+            Convert each probability p to odds o = p/(1 − p). Express both as a decimal and a ratio a:b.
+            <ul>
+              <li>a) p = 0.10</li>
+              <li>b) p = 0.20</li>
+              <li>c) p = 0.50</li>
+              <li>d) p = 0.75</li>
+              <li>e) p = 0.90</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) o = 0.111…; ratio 1:9</li>
+                <li>b) o = 0.25; ratio 1:4</li>
+                <li>c) o = 1; ratio 1:1</li>
+                <li>d) o = 3; ratio 3:1</li>
+                <li>e) o = 9; ratio 9:1</li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            Convert each odds to probability p = o/(1 + o).
+            <ul>
+              <li>a) Odds = 1:4</li>
+              <li>b) Odds = 2:3</li>
+              <li>c) Odds = 3:1</li>
+              <li>d) Odds = 9:1</li>
+              <li>e) Decimal odds o = 0.25</li>
+              <li>f) Decimal odds o = 7</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) p = 0.20</li>
+                <li>b) p = 0.40</li>
+                <li>c) p = 0.75</li>
+                <li>d) p = 0.90</li>
+                <li>e) p = 0.20</li>
+                <li>f) p = 0.875</li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            Which of the following has the higher probability? Explain briefly.
+            <ul>
+              <li>a) Odds 3:2 or odds 2:1</li>
+              <li>b) Odds 4:1 or odds 9:3</li>
+              <li>c) p = 0.62 or odds 2:1</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) 2:1 is higher (p = 2/3 ≈ 0.667 vs 0.6)</li>
+                <li>b) 4:1 is higher (p = 4/5 = 0.8 vs 9:3 → 3:1 → p = 3/4 = 0.75)</li>
+                <li>c) Odds 2:1 is higher (≈ 0.667 vs 0.62)</li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            If the odds of an event are 5 to 1 against, what is its probability?
+            <details>
+              <summary>Show answer</summary>
+              Odds against 5:1 means odds in favor are 1:5 (o = 1/5). So p = o/(1+o) = (1/5)/(6/5) = 1/6 ≈ 0.167.
+            </details>
+          </li>
+          <li>
+            “One in 8” chance—express as:
+            <ul>
+              <li>a) Probability p</li>
+              <li>b) Odds (as decimal and as a ratio)</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) p = 1/8 = 0.125</li>
+                <li>b) o = p/(1−p) = (1/8)/(7/8) = 1/7 ≈ 0.1429; ratio 1:7</li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            A spinner has p = 0.4 for landing on red. State the odds for red and the odds against red.
+            <details>
+              <summary>Show answer</summary>
+              Odds for red: o = 0.4/0.6 = 2/3 ≈ 0.667 (ratio 2:3). Odds against red: 0.6/0.4 = 3/2 = 1.5 (ratio 3:2).
+            </details>
+          </li>
+          <li>
+            “The odds are even.” What’s the probability? Give both p and odds as a ratio.
+            <details>
+              <summary>Show answer</summary>
+              Even odds means 1:1. Thus p = 1/(1+1) = 1/2 = 0.5; odds ratio 1:1.
+            </details>
+          </li>
+        </ol>
+      </section>
+
+      <h2 style="margin: 1.25rem 0 0.5rem; font-size: 1.1rem;">Log Odds</h2>
+      <!-- Second row: p vs odds (left), p vs ln(odds) (right) -->
+      <div class="charts">
+        <div class="canvas-wrap">
+          <canvas id="poChart2" aria-label="Plot of p vs odds o (p = o / (1 + o))" role="img"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="logitChart" aria-label="Plot of p vs ln(odds) (natural log)" role="img"></canvas>
+        </div>
+      </div>
+
+      <!-- Triple number lines: p (0..1), odds (0..∞), logit (-∞..∞) -->
+      <div id="mapLines" style="margin-top: 1.25rem;">
+        <svg id="mapSvg" width="100%" height="320" role="img" aria-label="Probability to Odds to Logit mapping"></svg>
+      </div>
+
+      <h2 style="margin: 1.25rem 0 0.5rem; font-size: 1.1rem;">Logit and Inverse</h2>
+      <!-- Third row: p vs logit (left), inverse (logit vs p) (right) -->
+      <div class="charts">
+        <div class="canvas-wrap">
+          <canvas id="pLogitChart" aria-label="Plot of logit(p) vs p" role="img"></canvas>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="invLogitChart" aria-label="Plot of p vs logit (inverse logistic)" role="img"></canvas>
+        </div>
+      </div>
+
+      <section id="logitPractice" style="margin-top: 1.25rem;">
+        <h2 style="margin: 0 0 0.5rem; font-size: 1.1rem;">Practice: Logit</h2>
+        <ol>
+          <li>
+            Compute logit(p) = ln(p/(1−p)) for:
+            <ul>
+              <li>a) p = 0.10</li>
+              <li>b) p = 0.20</li>
+              <li>c) p = 0.50</li>
+              <li>d) p = 0.80</li>
+              <li>e) p = 0.90</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) ln(0.1/0.9) = ln(1/9) ≈ −2.197</li>
+                <li>b) ln(0.2/0.8) = ln(1/4) ≈ −1.386</li>
+                <li>c) ln(0.5/0.5) = ln(1) = 0</li>
+                <li>d) ln(0.8/0.2) = ln(4) ≈ 1.386</li>
+                <li>e) ln(0.9/0.1) = ln(9) ≈ 2.197</li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            Convert each logit t to probability p = 1/(1 + e^{−t}). Round to 3 decimals.
+            <ul>
+              <li>a) t = −3</li>
+              <li>b) t = −1</li>
+              <li>c) t = 0</li>
+              <li>d) t = 1</li>
+              <li>e) t = 3</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) p ≈ 0.047</li>
+                <li>b) p ≈ 0.269</li>
+                <li>c) p = 0.500</li>
+                <li>d) p ≈ 0.731</li>
+                <li>e) p ≈ 0.953</li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            Solve for p:
+            <ul>
+              <li>a) logit(p) = ln(3)</li>
+              <li>b) logit(p) = −ln(4)</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) odds = 3 ⇒ p = 3/(1+3) = 0.75</li>
+                <li>b) odds = 1/4 ⇒ p = (1/4)/(1+1/4) = 1/5 = 0.20</li>
+              </ul>
+            </details>
+          </li>
+          <li>
+            True/False:
+            <ul>
+              <li>a) logit(p) &gt; 0 iff p &gt; 0.5</li>
+              <li>b) As p → 0, logit(p) → −∞</li>
+              <li>c) As p → 1, logit(p) → ∞</li>
+              <li>d) logit(p) is symmetric around p = 0.5 (i.e., logit(1−p) = −logit(p))</li>
+            </ul>
+            <details>
+              <summary>Show answers</summary>
+              <ul>
+                <li>a) True</li>
+                <li>b) True</li>
+                <li>c) True</li>
+                <li>d) True</li>
+              </ul>
+            </details>
+          </li>
+        </ol>
+      </section>
+    </main>
+
+    
+
+    <script>
+      // Utility: format numbers nicely
+      function formatNumber(x) {
+        if (!isFinite(x)) return '∞';
+        const abs = Math.abs(x);
+        if (abs >= 1000) return x.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        if (abs >= 10) return x.toLocaleString(undefined, { maximumFractionDigits: 2 });
+        if (abs >= 1) return x.toLocaleString(undefined, { maximumFractionDigits: 3 });
+        return x.toLocaleString(undefined, { maximumSignificantDigits: 3 });
+      }
+
+      // Generate points for f(p) = p / (1 - p) over (0, 1)
+      function generateOddsPoints(start = 0.001, end = 0.999, step = 0.001) {
+        const pts = [];
+        for (let p = start; p <= end + 1e-9; p += step) {
+          const y = p / (1 - p);
+          pts.push({ x: +p.toFixed(3), y });
+        }
+        return pts;
+      }
+
+      const points = generateOddsPoints();
+      // Inverse: p(o) = o / (1 + o), sample o in [0, 20]
+      function generateInversePoints(start = 0, end = 20, step = 0.05) {
+        const pts = [];
+        for (let o = start; o <= end + 1e-9; o += step) {
+          const p = o / (1 + o);
+          pts.push({ x: +o.toFixed(2), y: p });
+        }
+        return pts;
+      }
+      const inversePoints = generateInversePoints();
+      // For p vs ln(odds): reuse p-sampled points and transform y = ln(odds)
+      const logitPoints = points.map(pt => ({ x: pt.x, y: Math.log(pt.y) }));
+
+  const ctx = document.getElementById('oddsChart');
+  const invCtx = document.getElementById('inverseChart');
+  const poCtx2 = document.getElementById('poChart2');
+  const logitCtx = document.getElementById('logitChart');
+  const pLogitCtx = document.getElementById('pLogitChart');
+  const invLogitCtx = document.getElementById('invLogitChart');
+      const pSlider = document.getElementById('pSlider');
+      const pOut = document.getElementById('pOut');
+      const oddsOut = document.getElementById('oddsOut');
+
+      // Base dataset for the function
+      const funcDataset = {
+        label: 'f(p) = p / (1 − p)',
+        data: points,
+        parsing: false, // x/y are explicit
+        borderColor: '#2563eb',
+        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+        pointRadius: 0,
+        borderWidth: 2,
+        tension: 0,
+      };
+
+      // Marker dataset for the selected p value
+      const markerDataset = {
+        label: 'Selected p',
+        data: [],
+        parsing: false,
+        type: 'scatter',
+        showLine: false,
+        pointRadius: 5,
+        pointHoverRadius: 6,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+      };
+
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: { datasets: [funcDataset, markerDataset] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const p = ctx.parsed.x;
+                  const y = ctx.parsed.y;
+                  return `${ctx.dataset.label}: p=${formatNumber(p)}, f(p)=${formatNumber(y)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Probability p' },
+              min: 0,
+              max: 1,
+              ticks: {
+                callback: (val) => val.toFixed ? val.toFixed(2) : val,
+              },
+            },
+            y: {
+              type: 'linear',
+              title: { display: true, text: 'Odds f(p)' },
+              min: 0,
+              max: 20,
+            },
+          },
+        },
+      });
+
+      // Inverse chart: x = odds o, y = probability p(o) = o / (1 + o)
+      const inverseFuncDataset = {
+        label: 'p(o) = o / (1 + o)',
+        data: inversePoints,
+        parsing: false,
+        borderColor: '#059669',
+        backgroundColor: 'rgba(5, 150, 105, 0.2)',
+        pointRadius: 0,
+        borderWidth: 2,
+        tension: 0,
+      };
+      const inverseMarkerDataset = {
+        label: 'Selected odds',
+        data: [],
+        parsing: false,
+        type: 'scatter',
+        showLine: false,
+        pointRadius: 5,
+        pointHoverRadius: 6,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+      };
+      const inverseChart = new Chart(invCtx, {
+        type: 'line',
+        data: { datasets: [inverseFuncDataset, inverseMarkerDataset] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const o = ctx.parsed.x;
+                  const p = ctx.parsed.y;
+                  return `${ctx.dataset.label}: o=${formatNumber(o)}, p=${formatNumber(p)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Odds o' },
+              min: 0,
+              max: 20,
+            },
+            y: {
+              type: 'linear',
+              title: { display: true, text: 'Probability p(o)' },
+              min: 0,
+              max: 1,
+            },
+          },
+        },
+      });
+
+      // Second row left: p vs odds (p on x-axis, odds on y-axis)
+      const po2FuncDataset = {
+        label: 'f(p) = p / (1 − p)',
+        data: points,
+        parsing: false,
+        borderColor: '#7c3aed',
+        backgroundColor: 'rgba(124, 58, 237, 0.15)',
+        pointRadius: 0,
+        borderWidth: 2,
+        tension: 0,
+      };
+      const po2MarkerDataset = {
+        label: 'Selected p',
+        data: [],
+        parsing: false,
+        type: 'scatter',
+        showLine: false,
+        pointRadius: 5,
+        pointHoverRadius: 6,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+      };
+      const poChart2 = new Chart(poCtx2, {
+        type: 'line',
+        data: { datasets: [po2FuncDataset, po2MarkerDataset] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const p = ctx.parsed.x;
+                  const y = ctx.parsed.y;
+                  return `${ctx.dataset.label}: p=${formatNumber(p)}, f(p)=${formatNumber(y)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Probability p' },
+              min: 0,
+              max: 1,
+              ticks: {
+                callback: (val) => val.toFixed ? val.toFixed(2) : val,
+              },
+            },
+            y: {
+              type: 'linear',
+              title: { display: true, text: 'Odds f(p)' },
+              min: 0,
+              max: 20,
+            },
+          },
+        },
+      });
+
+      // Second row right: p vs ln(odds) with p on x-axis
+      const logitFuncDataset = {
+        label: 'ln(odds) vs p',
+        data: logitPoints,
+        parsing: false,
+        borderColor: '#dc2626',
+        backgroundColor: 'rgba(220, 38, 38, 0.15)',
+        pointRadius: 0,
+        borderWidth: 2,
+        tension: 0,
+      };
+      const logitMarkerDataset = {
+        label: 'Selected p',
+        data: [],
+        parsing: false,
+        type: 'scatter',
+        showLine: false,
+        pointRadius: 5,
+        pointHoverRadius: 6,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+      };
+      const logitChart = new Chart(logitCtx, {
+        type: 'line',
+        data: { datasets: [logitFuncDataset, logitMarkerDataset] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const p = ctx.parsed.x;
+                  const t = ctx.parsed.y;
+                  return `${ctx.dataset.label}: p=${formatNumber(p)}, ln(odds)=${formatNumber(t)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Probability p' },
+              min: 0,
+              max: 1,
+              ticks: {
+                callback: (val) => val.toFixed ? val.toFixed(2) : val,
+              },
+            },
+            y: {
+              type: 'linear',
+              title: { display: true, text: 'ln(odds)' },
+              min: -7,
+              max: 7,
+            },
+          },
+        },
+      });
+
+      // Third row left: p vs logit(p)
+      const pLogitFuncDataset = {
+        label: 'logit(p) = ln(p / (1 − p))',
+        data: logitPoints,
+        parsing: false,
+        borderColor: '#0ea5e9',
+        backgroundColor: 'rgba(14, 165, 233, 0.15)',
+        pointRadius: 0,
+        borderWidth: 2,
+        tension: 0,
+      };
+      const pLogitMarkerDataset = {
+        label: 'Selected p',
+        data: [],
+        parsing: false,
+        type: 'scatter',
+        showLine: false,
+        pointRadius: 5,
+        pointHoverRadius: 6,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+      };
+      const pLogitChart = new Chart(pLogitCtx, {
+        type: 'line',
+        data: { datasets: [pLogitFuncDataset, pLogitMarkerDataset] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const p = ctx.parsed.x;
+                  const t = ctx.parsed.y;
+                  return `${ctx.dataset.label}: p=${formatNumber(p)}, logit=${formatNumber(t)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'Probability p' },
+              min: 0,
+              max: 1,
+              ticks: {
+                callback: (val) => val.toFixed ? val.toFixed(2) : val,
+              },
+            },
+            y: {
+              type: 'linear',
+              title: { display: true, text: 'logit(p)' },
+              min: -7,
+              max: 7,
+            },
+          },
+        },
+      });
+
+      // Third row right: inverse of logit (logistic function)
+      function generateLogisticPoints(start = -7, end = 7, step = 0.05) {
+        const pts = [];
+        for (let t = start; t <= end + 1e-9; t += step) {
+          const p = 1 / (1 + Math.exp(-t));
+          pts.push({ x: +t.toFixed(2), y: p });
+        }
+        return pts;
+      }
+      const logisticPoints = generateLogisticPoints();
+      const invLogitFuncDataset = {
+        label: 'p = 1 / (1 + e^{−t})',
+        data: logisticPoints,
+        parsing: false,
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+        pointRadius: 0,
+        borderWidth: 2,
+        tension: 0,
+      };
+      const invLogitMarkerDataset = {
+        label: 'Selected p',
+        data: [],
+        parsing: false,
+        type: 'scatter',
+        showLine: false,
+        pointRadius: 5,
+        pointHoverRadius: 6,
+        backgroundColor: '#ef4444',
+        borderColor: '#ef4444',
+      };
+      const invLogitChart = new Chart(invLogitCtx, {
+        type: 'line',
+        data: { datasets: [invLogitFuncDataset, invLogitMarkerDataset] },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'nearest', intersect: false },
+          plugins: {
+            legend: { position: 'top' },
+            tooltip: {
+              callbacks: {
+                label: (ctx) => {
+                  const t = ctx.parsed.x;
+                  const p = ctx.parsed.y;
+                  return `${ctx.dataset.label}: t=${formatNumber(t)}, p=${formatNumber(p)}`;
+                },
+              },
+            },
+          },
+          scales: {
+            x: {
+              type: 'linear',
+              title: { display: true, text: 'logit t' },
+              min: -7,
+              max: 7,
+            },
+            y: {
+              type: 'linear',
+              title: { display: true, text: 'Probability p' },
+              min: 0,
+              max: 1,
+            },
+          },
+        },
+      });
+
+      function updateMarkerFromSlider() {
+        const p = Number(pSlider.value);
+        const y = p / (1 - p);
+        pOut.value = p.toFixed(3);
+        oddsOut.value = formatNumber(y);
+        markerDataset.data = [{ x: p, y }];
+        inverseMarkerDataset.data = [{ x: y, y: p }];
+  po2MarkerDataset.data = [{ x: p, y }];
+  logitMarkerDataset.data = [{ x: p, y: Math.log(y) }];
+        chart.update('none');
+        inverseChart.update('none');
+        poChart2.update('none');
+        logitChart.update('none');
+        pLogitChart.update('none');
+        invLogitChart.update('none');
+      }
+
+      // Initialize UI
+      updateMarkerFromSlider();
+      // Wire up events
+      pSlider.addEventListener('input', updateMarkerFromSlider);
+    </script>
+    <script>
+      // Draw triple number lines mapping p -> odds -> ln(odds)
+      function drawNumberLines() {
+        const svg = document.getElementById('mapSvg');
+        if (!svg) return;
+        // Clear existing
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+        const W = svg.clientWidth || svg.parentElement.getBoundingClientRect().width;
+        const H = svg.clientHeight || 360;
+        svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+
+        // Margins and layout for vertical lines
+        const mTop = 24, mBottom = 28;
+        const mBetween = 120; // horizontal spacing between lines
+        const xP = 80;                 // x-position for p line
+        const xO = xP + mBetween;      // x-position for odds line
+        const xT = xO + mBetween;      // x-position for logit line
+
+  // Visual lengths: fit within available height
+  const availV = Math.max(60, H - mTop - mBottom);
+  const L_odds = Math.min(240, Math.floor(availV / 2)); // half above and half below baseline for logit
+  // Baseline y (value 0) alignment shared across all three; center so logit fits
+  const y0 = mTop + L_odds;
+  // Probability is shorter than odds
+  const L_prob = Math.max(0, Math.floor(L_odds * 0.6));
+
+        // Visual caps for value mapping
+        const oddsMax = 20; // cap odds
+        const tMaxAbs = 7;  // |ln(odds)| cap
+
+        // Mapping functions to y-coordinates
+        const yp = (p) => y0 - p * L_prob; // p in [0,1]
+        const yo = (o) => y0 - Math.min(o, oddsMax) / oddsMax * L_odds; // o in [0,∞)
+        const yt = (t) => {
+          const tc = Math.max(-tMaxAbs, Math.min(t, tMaxAbs));
+          return y0 - (tc / tMaxAbs) * L_odds; // logit spans [-L_odds, +L_odds]
+        };
+
+        function line(xa, ya, xb, yb, opts = {}) {
+          const el = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          el.setAttribute('x1', xa); el.setAttribute('y1', ya);
+          el.setAttribute('x2', xb); el.setAttribute('y2', yb);
+          el.setAttribute('stroke', opts.color || '#9ca3af');
+          el.setAttribute('stroke-width', opts.width || 1.25);
+          el.setAttribute('stroke-linecap', 'round');
+          if (opts.dash) el.setAttribute('stroke-dasharray', opts.dash);
+          svg.appendChild(el);
+          return el;
+        }
+        function text(x, y, str, opts = {}) {
+          const el = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+          el.setAttribute('x', x); el.setAttribute('y', y);
+          el.setAttribute('fill', opts.color || 'currentColor');
+          el.setAttribute('font-size', opts.size || 12);
+          el.setAttribute('text-anchor', opts.anchor || 'middle');
+          el.setAttribute('dominant-baseline', 'middle');
+          el.textContent = str;
+          svg.appendChild(el);
+          return el;
+        }
+        function circle(x, y, r, opts = {}) {
+          const el = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          el.setAttribute('cx', x); el.setAttribute('cy', y);
+          el.setAttribute('r', r);
+          el.setAttribute('fill', opts.fill || 'currentColor');
+          svg.appendChild(el);
+          return el;
+        }
+
+        // Baseline vertical lines
+        line(xP, y0 - L_prob, xP, y0, { width: 2, color: '#4b5563' });
+        line(xO, y0 - L_odds, xO, y0, { width: 2, color: '#4b5563' });
+  line(xT, y0 - L_odds, xT, y0 + L_odds, { width: 2, color: '#4b5563' });
+
+        // Labels above each line
+        text(xP, y0 - L_prob - 14, 'p', { anchor: 'middle' });
+        text(xO, y0 - L_odds - 14, 'odds', { anchor: 'middle' });
+        text(xT, y0 - L_odds - 14, 'ln(odds)', { anchor: 'middle' });
+
+        // Tick labels
+        text(xP - 18, y0, '0', { anchor: 'end' });
+        text(xP - 18, y0 - L_prob, '1', { anchor: 'end' });
+        text(xO - 18, y0, '0', { anchor: 'end' });
+        text(xO - 18, y0 - L_odds, '∞', { anchor: 'end' });
+        text(xT - 18, y0 + L_odds, '−∞', { anchor: 'end' });
+        text(xT - 18, y0, '0', { anchor: 'end' });
+        text(xT - 18, y0 - L_odds, '∞', { anchor: 'end' });
+
+        // Points at every tenth on p-line and connecting lines across
+        for (let k = 0; k <= 10; k++) {
+          const p = k / 10;
+          const o = p === 1 ? Infinity : (p === 0 ? 0 : p / (1 - p));
+          const t = !isFinite(o) ? (o > 0 ? Infinity : -Infinity) : Math.log(Math.max(o, 1e-12));
+
+          const yP = yp(p);
+          const yO = yo(o);
+          const yT = yt(t);
+
+          // Circle on probability line
+          circle(xP, yP, 3, { fill: '#111827' });
+          // Connect p -> odds
+          line(xP + 5, yP, xO - 5, yO, { color: '#9ca3af', width: 1 });
+          // Connect odds -> logit
+          line(xO + 5, yO, xT - 5, yT, { color: '#9ca3af', width: 1 });
+
+          // Annotate major p values on p line
+          if (k % 2 === 0) {
+            text(xP - 18, yP, p.toFixed(1), { anchor: 'end', size: 11 });
+          }
+        }
+      }
+
+      // Initial draw and resize handling
+      window.addEventListener('load', drawNumberLines);
+      window.addEventListener('resize', () => {
+        // Debounce resize a bit
+        clearTimeout(window.__drawNL);
+        window.__drawNL = setTimeout(drawNumberLines, 100);
+      });
+    </script>
+  </body>
+  </html>
